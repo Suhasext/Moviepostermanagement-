@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TokenScope - AI Text Analyzer</title>
+    <style>
+        :root {
+            --bg-primary: #f0f4f8;
+            --bg-secondary: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --accent: #3b82f6;
+            --accent-hover: #2563eb;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --border: #e2e8f0;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --accent: #60a5fa;
+            --accent-hover: #3b82f6;
+            --border: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+        .theme-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            box-shadow: var(--shadow);
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(180deg);
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .model-selector {
+            margin-bottom: 20px;
+        }
+
+        select {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            cursor: pointer;
+            transition: border-color 0.3s;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .input-section {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        textarea {
+            width: 100%;
+            min-height: 300px;
+            padding: 20px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 1rem;
+            resize: vertical;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+        }
+
+        .placeholder-hint {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: var(--text-secondary);
+            pointer-events: none;
+            transition: transform 0.2s, font-size 0.2s;
+        }
+
+        textarea:focus + .placeholder-hint,
+        textarea:not(:placeholder-shown) + .placeholder-hint {
+            transform: translateY(-30px);
+            font-size: 0.85rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            background: var(--accent);
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: var(--shadow);
+        }
+
+        button:hover {
+            background: var(--accent-hover);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button.secondary {
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        button.secondary:hover {
+            background: var(--border);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+            color: var(--accent);
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+        }
+
+        .progress-section {
+            margin-bottom: 20px;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: var(--bg-primary);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success), var(--warning), var(--danger));
+            border-radius: 5px;
+            transition: width 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .progress-text {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .model-info {
+            background: var(--bg-primary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 10px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 600px) {
+            h1 { font-size: 2rem; }
+            .card { padding: 20px; }
+            textarea { min-height: 200px; }
+        }
+    </style>
+</head>
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+    
+    <div class="container">
+        <header>
+            <h1>TokenScope</h1>
+            <p class="subtitle">Analyze your text for AI model compatibility</p>
+        </header>
+
+        <main class="card">
+            <div class="model-selector">
+                <label for="modelSelect" style="display: block; margin-bottom: 8px; font-weight: 600;">Select AI Model Context Limit:</label>
+                <select id="modelSelect" onchange="updateStats()">
+                    <option value="4096">GPT-3.5 Turbo (4,096 tokens)</option>
+                    <option value="16384" selected>GPT-3.5 Turbo 16K (16,384 tokens)</option>
+                    <option value="32768">GPT-4 (32,768 tokens)</option>
+                    <option value="128000">GPT-4 Turbo (128,000 tokens)</option>
+                    <option value="200000">Claude 3 (200,000 tokens)</option>
+                    <option value="1000000">Gemini 1.5 Pro (1,000,000 tokens)</option>
+                    <option value="custom">Custom Limit...</option>
+                </select>
+                <input type="number" id="customLimit" placeholder="Enter custom token limit" style="display: none; margin-top: 10px; width: 100%; padding: 12px; border: 1px solid var(--border); border-radius: 8px;" onchange="updateStats()">
+            </div>
+
+            <div class="input-section">
+                <textarea id="textInput" placeholder=" " oninput="updateStats()"></textarea>
+                <label class="placeholder-hint" for="textInput">Paste your paragraph here...</label>
+            </div>
+
+            <div class="button-group">
+                <button onclick="pasteFromClipboard()">📋 Paste</button>
+                <button onclick="clearText()" class="secondary">🗑️ Clear</button>
+                <button onclick="loadSampleText()" class="secondary">📝 Sample</button>
+                <button onclick="copyStats()" class="secondary">📊 Copy Stats</button>
+            </div>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-value" id="tokenCount">0</div>
+                    <div class="stat-label">Tokens</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="wordCount">0</div>
+                    <div class="stat-label">Words</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="charCount">0</div>
+                    <div class="stat-label">Characters</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="sentenceCount">0</div>
+                    <div class="stat-label">Sentences</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="paragraphCount">0</div>
+                    <div class="stat-label">Paragraphs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="readingTime">0</div>
+                    <div class="stat-label">Min Read</div>
+                </div>
+            </div>
+
+            <div class="progress-section">
+                <div class="progress-text">
+                    <span>Context Usage</span>
+                    <span id="usagePercent">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+                <div class="model-info" id="modelInfo"></div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // Token estimation (approximation of how GPT models tokenize)
+        function estimateTokens(text) {
+            if (!text.trim()) return 0;
+            
+            // Rough approximation: average 1 token ≈ 0.75 words, but count special patterns
+            const words = text.trim().split(/\s+/).length;
+            const chars = text.length;
+            const punctuation = (text.match(/[.,!?;:()[\]{}]/g) || []).length;
+            const numbers = (text.match(/\d+/g) || []).length;
+            const capitals = (text.match(/[A-Z]/g) || []).length;
+            
+            // More accurate estimation
+            const estimatedTokens = Math.ceil(
+                words * 0.75 + 
+                punctuation * 0.5 + 
+                numbers * 0.75 + 
+                capitals * 0.1 + 
+                chars * 0.02
+            );
+            
+            return Math.max(estimatedTokens, 1);
+        }
+
+        function updateStats() {
+            const text = document.getElementById('textInput').value;
+            const modelSelect = document.getElementById('modelSelect');
+            let limit = parseInt(modelSelect.value);
+            
+            if (modelSelect.value === 'custom') {
+                const customLimit = document.getElementById('customLimit');
+                limit = parseInt(customLimit.value) || 4096;
+                customLimit.style.display = 'block';
+            } else {
+                document.getElementById('customLimit').style.display = 'none';
+            }
+
+            // Calculate statistics
+            const tokens = estimateTokens(text);
+            const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+            const chars = text.length;
+            const sentences = text.trim() ? text.split(/[.!?]+/).filter(s => s.trim()).length : 0;
+            const paragraphs = text.trim() ? text.split(/\n\s*\n/).filter(p => p.trim()).length : 0;
+            const readingTime = Math.ceil(words / 200); // 200 words per minute
+
+            // Update UI
+            document.getElementById('tokenCount').textContent = tokens.toLocaleString();
+            document.getElementById('wordCount').textContent = words.toLocaleString();
+            document.getElementById('charCount').textContent = chars.toLocaleString();
+            document.getElementById('sentenceCount').textContent = sentences.toLocaleString();
+            document.getElementById('paragraphCount').textContent = paragraphs.toLocaleString();
+            document.getElementById('readingTime').textContent = readingTime;
+
+            // Update progress bar
+            const usagePercent = Math.min((tokens / limit) * 100, 100);
+            document.getElementById('usagePercent').textContent = usagePercent.toFixed(1) + '%';
+            document.getElementById('progressFill').style.width = usagePercent + '%';
+
+            // Update model info
+            const remaining = Math.max(limit - tokens, 0);
+            const modelName = modelSelect.options[modelSelect.selectedIndex].text.split(' (')[0];
+            document.getElementById('modelInfo').innerHTML = 
+                `<strong>${modelName}</strong> | Limit: ${limit.toLocaleString()} tokens | 
+                 Used: ${tokens.toLocaleString()} | Remaining: ${remaining.toLocaleString()}`;
+        }
+
+        function clearText() {
+            document.getElementById('textInput').value = '';
+            updateStats();
+        }
+
+        function loadSampleText() {
+            const sample = `TokenScope is a powerful tool designed to help writers, developers, and AI enthusiasts understand their text's token usage. 
+By analyzing character count, word boundaries, and punctuation patterns, it provides accurate estimates of how AI models like GPT will process your input.
+
+This helps prevent context limit overruns and optimizes prompt engineering. Paste any text above to see detailed analytics including token count, word count, character count, sentences, paragraphs, and estimated reading time.`;
+            
+            document.getElementById('textInput').value = sample;
+            updateStats();
+        }
+
+        async function pasteFromClipboard() {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('textInput').value = text;
+                updateStats();
+            } catch (err) {
+                alert('Could not access clipboard. Please paste manually (Ctrl+V).');
+            }
+        }
+
+        function copyStats() {
+            const text = document.getElementById('textInput').value;
+            if (!text.trim()) {
+                alert('No text to analyze!');
+                return;
+            }
+
+            const stats = {
+                Tokens: document.getElementById('tokenCount').textContent,
+                Words: document.getElementById('wordCount').textContent,
+                Characters: document.getElementById('charCount').textContent,
+                Sentences: document.getElementById('sentenceCount').textContent,
+                Paragraphs: document.getElementById('paragraphCount').textContent,
+                'Reading Time': document.getElementById('readingTime').textContent + ' min'
+            };
+
+            const statsText = `Text Analysis Results:\n\n${Object.entries(stats).map(([k, v]) => `${k}: ${v}`).join('\n')}`;
+            
+            navigator.clipboard.writeText(statsText).then(() => {
+                alert('Statistics copied to clipboard!');
+            });
+        }
+
+        function toggleTheme() {
+            const html = document.documentElement;
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        }
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+
+        // Initialize
+        updateStats();
+    </script>
+</body>
+</html>
