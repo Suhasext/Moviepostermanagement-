@@ -21,6 +21,7 @@ data class ContentItem(
     val runtime: Int? = null,
     val userRating: Float? = null,
     val userNotes: String? = null,
+    val publicRatings: List<PublicRating> = emptyList(),
     val dateAdded: Long,
     val dateWatched: Long? = null,
     val imdbId: String? = null

@@ -1,6 +1,8 @@
 package com.example.moviepostermanagementapp.data.model
 
 import androidx.room.TypeConverter
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 
 class Converters {
     @TypeConverter
@@ -31,5 +33,22 @@ class Converters {
     @TypeConverter
     fun toContentStatus(value: String): ContentStatus {
         return ContentStatus.valueOf(value)
+    }
+
+    @TypeConverter
+    fun fromPublicRatingList(value: List<PublicRating>): String {
+        val gson = Gson()
+        val type = object : TypeToken<List<PublicRating>>() {}.type
+        return gson.toJson(value, type)
+    }
+
+    @TypeConverter
+    fun toPublicRatingList(value: String): List<PublicRating> {
+        if (value.isEmpty()) {
+            return emptyList()
+        }
+        val gson = Gson()
+        val type = object : TypeToken<List<PublicRating>>() {}.type
+        return gson.fromJson(value, type)
     }
 }
